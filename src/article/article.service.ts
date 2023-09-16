@@ -74,6 +74,7 @@ export class ArticleService {
         try {
             const article = await this.prisma.article.create({
                 data: {
+                    authorId: 0,
                     title: 'Test article',
                     content: 'This is just a test article !',
                     published: true,
