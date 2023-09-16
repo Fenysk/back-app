@@ -7,10 +7,22 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 export class ArticleService {
     constructor(private prisma: PrismaService) { }
 
-    async getAllArticles() {
+    async getArticles() {
         const articles = await this.prisma.article.findMany({
             where: { published: true, },
         });
+
+        if (articles.length === 0) {
+            console.log('No articles found :/');
+            throw new NotFoundException('No articles found :/');
+        }
+
+        console.log('Articles found !');
+        return articles;
+    }
+
+    async getAllArticles() {
+        const articles = await this.prisma.article.findMany();
 
         if (articles.length === 0) {
             console.log('No articles found :/');
@@ -59,9 +71,14 @@ export class ArticleService {
         return article;
     }
 
-    async createArticle(data: ArticleDto) {
+    async createArticle(data: ArticleDto, authorId: number) {
         try {
-            const article = await this.prisma.article.create({ data });
+            const article = await this.prisma.article.create({
+                data: {
+                    ...data,
+                    authorId,
+                },
+            });
 
             console.log('Article created !');
             return article;
@@ -70,11 +87,11 @@ export class ArticleService {
         }
     }
 
-    async createTestArticle() {
+    async createTestArticle(authorId: number) {
         try {
             const article = await this.prisma.article.create({
                 data: {
-                    authorId: 0,
+                    authorId,
                     title: 'Test article',
                     content: 'This is just a test article !',
                     published: true,
